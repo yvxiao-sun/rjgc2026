@@ -1,0 +1,127 @@
+{
+  "name": "se-agent",
+  "displayName": "SE Agent",
+  "description": "软件工程智能体 - 基于大语言模型的需求分析与设计工具",
+  "version": "1.0.0",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:se-agent.analyze",
+    "onCommand:se-agent.design",
+    "onCommand:se-agent.analyzeAndDesign"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "se-agent.analyze",
+        "title": "SE Agent: 需求分析",
+        "category": "SE Agent"
+      },
+      {
+        "command": "se-agent.design",
+        "title": "SE Agent: 生成设计模型",
+        "category": "SE Agent"
+      },
+      {
+        "command": "se-agent.analyzeAndDesign",
+        "title": "SE Agent: 分析并生成设计",
+        "category": "SE Agent"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "se-agent.analyze",
+          "when": "resourceLangId == markdown",
+          "group": "se-agent"
+        },
+        {
+          "command": "se-agent.design",
+          "when": "resourceLangId == markdown",
+          "group": "se-agent"
+        },
+        {
+          "command": "se-agent.analyzeAndDesign",
+          "when": "resourceLangId == markdown",
+          "group": "se-agent"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "se-agent.analyze",
+          "when": "resourceLangId == markdown"
+        },
+        {
+          "command": "se-agent.design",
+          "when": "resourceLangId == markdown"
+        },
+        {
+          "command": "se-agent.analyzeAndDesign",
+          "when": "resourceLangId == markdown"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "SE Agent Configuration",
+      "properties": {
+        "se-agent.provider": {
+          "type": "string",
+          "default": "deepseek",
+          "description": "大语言模型提供商",
+          "enum": ["deepseek", "openai"]
+        },
+        "se-agent.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "大语言模型API密钥"
+        },
+        "se-agent.model": {
+          "type": "string",
+          "default": "",
+          "description": "使用的大语言模型（留空使用默认模型）"
+        },
+        "se-agent.outputFormat": {
+          "type": "string",
+          "default": "mermaid",
+          "description": "输出格式: mermaid 或 plantuml",
+          "enum": ["mermaid", "plantuml"]
+        },
+        "se-agent.outputDirectory": {
+          "type": "string",
+          "default": "./design-output",
+          "description": "输出目录路径"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "20.11.0",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "eslint": "^8.56.0",
+    "glob": "^10.3.10",
+    "mocha": "^10.2.0",
+    "typescript": "^5.3.3",
+    "@vscode/test-electron": "^2.3.9"
+  },
+  "dependencies": {
+    "axios": "^1.6.7",
+    "openai": "^4.28.0"
+  }
+}

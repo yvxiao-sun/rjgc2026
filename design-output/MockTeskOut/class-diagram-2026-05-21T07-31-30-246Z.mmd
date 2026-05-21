@@ -1,0 +1,27 @@
+classDiagram
+    class User {
+      -string id
+      -string username
+      -string email
+      -string passwordHash
+      -Date createdAt
+      +login(username, password) bool
+      +register(username, email, password) bool
+      +logout() void
+    }
+    
+    class Role {
+      -string id
+      -string name
+      -string description
+      +getPermissions() list
+    }
+    
+    class Permission {
+      -string id
+      -string name
+      -string description
+    }
+    
+    User "1" -- "*" Role : has
+    Role "1" -- "*" Permission : has
