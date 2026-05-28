@@ -1,0 +1,79 @@
+{
+  "classDiagram": "classDiagram\n    class User {\n        +String userId\n        +String name\n        +String email\n        +login()\n        +logout()\n    }\n    class Admin {\n        +manageSystem()\n        +createCourse()\n    }\n    class Student {\n        +String studentId\n        +String major\n        +enrollCourse()\n        +viewGrade()\n    }\n    class Teacher {\n        +String teacherId\n        +String department\n        +createExam()\n        +gradeExam()\n    }\n    class Course {\n        +String courseId\n        +String courseName\n        +int credits\n        +addStudent()\n        +removeStudent()\n    }\n    class Enrollment {\n        +String enrollmentId\n        +Date enrollDate\n        +String status\n        +drop()\n    }\n    class Exam {\n        +String examId\n        +String examName\n        +Date examDate\n        +int totalMarks\n        +publishResult()\n    }\n    class Grade {\n        +String gradeId\n        +int marksObtained\n        +String letterGrade\n        +calculateGrade()\n    }\n\n    User <|-- Admin : extends\n    User <|-- Student : extends\n    User <|-- Teacher : extends\n\n    Student \"1\" --> \"0..*\" Enrollment : has\n    Course \"1\" --> \"0..*\" Enrollment : contains\n    Teacher \"1\" --> \"0..*\" Course : teaches\n    Course \"1\" --> \"0..*\" Exam : has\n    Exam \"1\" --> \"0..*\" Grade : includes\n    Student \"1\" --> \"0..*\" Grade : receives\n    Enrollment \"1\" --> \"0..1\" Grade : resultsIn",
+  "relationships": [
+    {
+      "type": "inheritance",
+      "parent": "User",
+      "child": "Admin",
+      "description": "管理员是用户的一种特殊类型，继承用户的所有属性和方法，并拥有管理系统的特有功能。"
+    },
+    {
+      "type": "inheritance",
+      "parent": "User",
+      "child": "Student",
+      "description": "学生是用户的一种特殊类型，继承用户的基本信息，并拥有选课、查看成绩等特有行为。"
+    },
+    {
+      "type": "inheritance",
+      "parent": "User",
+      "child": "Teacher",
+      "description": "教师是用户的一种特殊类型，继承用户的基本信息，并拥有创建考试、评分等特有行为。"
+    },
+    {
+      "type": "association",
+      "from": "Student",
+      "to": "Enrollment",
+      "multiplicityFrom": "1",
+      "multiplicityTo": "0..*",
+      "description": "一个学生可以拥有零条或多条选课记录（例如新生尚无选课，老生可多次选课）。"
+    },
+    {
+      "type": "association",
+      "from": "Course",
+      "to": "Enrollment",
+      "multiplicityFrom": "1",
+      "multiplicityTo": "0..*",
+      "description": "一门课程可以包含零条或多条选课记录（新开课程可能无人选，热门课程则有很多学生选）。"
+    },
+    {
+      "type": "association",
+      "from": "Teacher",
+      "to": "Course",
+      "multiplicityFrom": "1",
+      "multiplicityTo": "0..*",
+      "description": "一位教师可以教授零门或多门课程（新教师可能暂未分配课程，资深教师可教多门）。"
+    },
+    {
+      "type": "aggregation",
+      "from": "Course",
+      "to": "Exam",
+      "multiplicityFrom": "1",
+      "multiplicityTo": "0..*",
+      "description": "一门课程可以包含零次或多次考试（如期中、期末、随堂测验），考试离开课程无独立存在意义，但考试可单独管理。"
+    },
+    {
+      "type": "composition",
+      "from": "Exam",
+      "to": "Grade",
+      "multiplicityFrom": "1",
+      "multiplicityTo": "0..*",
+      "description": "一次考试包含零条或多条成绩记录，成绩记录完全依赖于考试的存在，考试删除则成绩记录一并删除。"
+    },
+    {
+      "type": "association",
+      "from": "Student",
+      "to": "Grade",
+      "multiplicityFrom": "1",
+      "multiplicityTo": "0..*",
+      "description": "一个学生可以拥有零条或多条成绩记录（未参加考试则无成绩，参加多门考试则有多个成绩）。"
+    },
+    {
+      "type": "association",
+      "from": "Enrollment",
+      "to": "Grade",
+      "multiplicityFrom": "1",
+      "multiplicityTo": "0..1",
+      "description": "一条选课记录可能产生零条或一条最终成绩（选课后可能退课无成绩，正常完成课程则有一条成绩）。"
+    }
+  ]
+}

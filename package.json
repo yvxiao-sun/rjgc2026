@@ -12,9 +12,16 @@
   "activationEvents": [
     "onCommand:se-agent.analyze",
     "onCommand:se-agent.design",
-    "onCommand:se-agent.analyzeAndDesign"
+    "onCommand:se-agent.analyzeAndDesign",
+    "onCommand:se-agent.createSession",
+    "onCommand:se-agent.continueSession",
+    "onCommand:se-agent.runStep",
+    "onCommand:se-agent.listSessions"
   ],
   "main": "./out/extension.js",
+  "bin": {
+    "se-agent": "./out/cli.js"
+  },
   "contributes": {
     "commands": [
       {
@@ -30,6 +37,26 @@
       {
         "command": "se-agent.analyzeAndDesign",
         "title": "SE Agent: 分析并生成设计",
+        "category": "SE Agent"
+      },
+      {
+        "command": "se-agent.createSession",
+        "title": "SE Agent: 创建会话",
+        "category": "SE Agent"
+      },
+      {
+        "command": "se-agent.continueSession",
+        "title": "SE Agent: 继续会话",
+        "category": "SE Agent"
+      },
+      {
+        "command": "se-agent.runStep",
+        "title": "SE Agent: 执行指定步骤",
+        "category": "SE Agent"
+      },
+      {
+        "command": "se-agent.listSessions",
+        "title": "SE Agent: 列出会话",
         "category": "SE Agent"
       }
     ],
@@ -49,6 +76,11 @@
           "command": "se-agent.analyzeAndDesign",
           "when": "resourceLangId == markdown",
           "group": "se-agent"
+        },
+        {
+          "command": "se-agent.createSession",
+          "when": "resourceLangId == markdown",
+          "group": "se-agent"
         }
       ],
       "commandPalette": [
@@ -63,6 +95,19 @@
         {
           "command": "se-agent.analyzeAndDesign",
           "when": "resourceLangId == markdown"
+        },
+        {
+          "command": "se-agent.createSession",
+          "when": "resourceLangId == markdown"
+        },
+        {
+          "command": "se-agent.continueSession"
+        },
+        {
+          "command": "se-agent.runStep"
+        },
+        {
+          "command": "se-agent.listSessions"
         }
       ]
     },
@@ -73,7 +118,10 @@
           "type": "string",
           "default": "deepseek",
           "description": "大语言模型提供商",
-          "enum": ["deepseek", "openai"]
+          "enum": [
+            "deepseek",
+            "openai"
+          ]
         },
         "se-agent.apiKey": {
           "type": "string",
@@ -89,7 +137,10 @@
           "type": "string",
           "default": "mermaid",
           "description": "输出格式: mermaid 或 plantuml",
-          "enum": ["mermaid", "plantuml"]
+          "enum": [
+            "mermaid",
+            "plantuml"
+          ]
         },
         "se-agent.outputDirectory": {
           "type": "string",

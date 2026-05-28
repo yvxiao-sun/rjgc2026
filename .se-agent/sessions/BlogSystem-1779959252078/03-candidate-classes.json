@@ -1,0 +1,146 @@
+{
+  "candidateClasses": [
+    {
+      "className": "User",
+      "description": "系统用户，包含普通用户、作者和管理员三种角色",
+      "coreAttributes": [
+        "用户ID (userId)",
+        "用户名 (username)",
+        "邮箱 (email)",
+        "密码 (password)",
+        "昵称 (nickname)",
+        "头像 (avatar)",
+        "个人简介 (bio)",
+        "注册时间 (registerTime)",
+        "角色 (role): 普通用户/作者/管理员"
+      ],
+      "responsibilities": [
+        "管理个人账户信息（注册、登录、修改资料）",
+        "作为作者时管理自己的文章",
+        "作为管理员时管理所有内容和用户",
+        "发表和删除自己的评论"
+      ]
+    },
+    {
+      "className": "Article",
+      "description": "博客文章，由作者创建并发布",
+      "coreAttributes": [
+        "文章ID (articleId)",
+        "标题 (title)",
+        "正文 (content)",
+        "摘要 (summary)",
+        "分类 (category)",
+        "标签列表 (tags)",
+        "发布时间 (publishTime)",
+        "更新时间 (updateTime)",
+        "浏览量 (viewCount)",
+        "作者ID (authorId)",
+        "状态 (status): 草稿/已发布/待审核"
+      ],
+      "responsibilities": [
+        "承载博客内容（标题、正文、摘要）",
+        "关联分类和标签以便检索",
+        "记录发布和更新时间",
+        "统计浏览量",
+        "支持按分类、标签、时间筛选和关键词搜索"
+      ]
+    },
+    {
+      "className": "Comment",
+      "description": "用户对文章的评论，支持嵌套回复",
+      "coreAttributes": [
+        "评论ID (commentId)",
+        "内容 (content)",
+        "评论时间 (commentTime)",
+        "评论人ID (commenterId)",
+        "所属文章ID (articleId)",
+        "父评论ID (parentCommentId): 用于嵌套回复",
+        "状态 (status): 正常/待审核/已删除"
+      ],
+      "responsibilities": [
+        "记录用户对文章的评论内容",
+        "支持嵌套回复（通过父评论ID关联）",
+        "关联评论人和所属文章",
+        "支持评论审核和删除操作"
+      ]
+    },
+    {
+      "className": "Category",
+      "description": "文章分类，用于组织和管理文章",
+      "coreAttributes": [
+        "分类ID (categoryId)",
+        "分类名称 (name): 如技术、生活、随笔",
+        "分类描述 (description)",
+        "创建时间 (createTime)"
+      ],
+      "responsibilities": [
+        "对文章进行分类组织",
+        "支持按分类筛选文章列表",
+        "提供分类管理功能（增删改）"
+      ]
+    },
+    {
+      "className": "Tag",
+      "description": "文章标签，用于更细粒度的内容标记",
+      "coreAttributes": [
+        "标签ID (tagId)",
+        "标签名称 (name)",
+        "创建时间 (createTime)"
+      ],
+      "responsibilities": [
+        "为文章提供多标签标记",
+        "支持按标签筛选文章",
+        "支持标签管理功能"
+      ]
+    },
+    {
+      "className": "ArticleTag",
+      "description": "文章和标签的多对多关联关系",
+      "coreAttributes": [
+        "关联ID (id)",
+        "文章ID (articleId)",
+        "标签ID (tagId)"
+      ],
+      "responsibilities": [
+        "维护文章和标签之间的多对多关系",
+        "支持通过文章查找标签",
+        "支持通过标签查找文章"
+      ]
+    },
+    {
+      "className": "Session",
+      "description": "用户登录会话，管理用户登录状态",
+      "coreAttributes": [
+        "会话ID (sessionId)",
+        "用户ID (userId)",
+        "登录时间 (loginTime)",
+        "过期时间 (expireTime)",
+        "Token (token)"
+      ],
+      "responsibilities": [
+        "管理用户登录状态",
+        "验证用户身份",
+        "控制会话有效期"
+      ]
+    },
+    {
+      "className": "AuditLog",
+      "description": "操作审计日志，记录关键操作",
+      "coreAttributes": [
+        "日志ID (logId)",
+        "操作用户ID (operatorId)",
+        "操作类型 (actionType): 发布/编辑/删除/审核",
+        "操作对象类型 (targetType): 文章/评论/用户",
+        "操作对象ID (targetId)",
+        "操作时间 (operationTime)",
+        "操作详情 (details)"
+      ],
+      "responsibilities": [
+        "记录系统关键操作",
+        "支持操作追溯和审计",
+        "提供操作历史查询"
+      ]
+    }
+  ],
+  "description": "基于需求文档识别出8个候选类，包括核心领域实体（User、Article、Comment、Category、Tag）、关联实体（ArticleTag）和辅助实体（Session、AuditLog）。每个类都列出了核心属性和主要职责，为后续的类图设计提供基础。"
+}

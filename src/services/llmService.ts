@@ -1,15 +1,42 @@
 import { OpenAI } from 'openai';
-import * as vscode from 'vscode';
 
 export type ModelProvider = 'deepseek' | 'openai';
 
+export interface ChatMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
+
+let configCache: { apiKey?: string; provider?: ModelProvider; model?: string } | null = null;
+
+export function setConfig(config: { apiKey?: string; provider?: ModelProvider; model?: string }) {
+  configCache = config;
+}
+
+function getConfigValue<T>(key: string, defaultValue: T): T {
+  if (configCache && key in configCache) {
+    return configCache[key as keyof typeof configCache] as T;
+  }
+
+  try {
+    const vscode = require('vscode');
+    const config = vscode.workspace.getConfiguration('se-agent');
+    return config.get(key, defaultValue);
+  } catch {
+    const envValue = process.env[`SE_AGENT_${key.toUpperCase()}`];
+    if (envValue !== undefined) {
+      return envValue as unknown as T;
+    }
+    return defaultValue;
+  }
+}
+
 export async function createLLMClient(): Promise<OpenAI> {
-  const config = vscode.workspace.getConfiguration('se-agent');
-  const apiKey = config.get<string>('apiKey');
-  const provider = config.get<ModelProvider>('provider') || 'deepseek';
+  const apiKey = getConfigValue<string>('apiKey', '');
+  const provider = getConfigValue<ModelProvider>('provider', 'deepseek');
 
   if (!apiKey) {
-    throw new Error('请在设置中配置API密钥 (se-agent.apiKey)');
+    throw new Error('请配置API密钥 (se-agent.apiKey 或 SE_AGENT_APIKEY 环境变量)');
   }
 
   let baseURL = 'https://api.openai.com/v1';
@@ -25,9 +52,8 @@ export async function createLLMClient(): Promise<OpenAI> {
 }
 
 export async function getModelName(): Promise<string> {
-  const config = vscode.workspace.getConfiguration('se-agent');
-  const provider = config.get<ModelProvider>('provider') || 'deepseek';
-  const customModel = config.get<string>('model');
+  const provider = getConfigValue<ModelProvider>('provider', 'deepseek');
+  const customModel = getConfigValue<string>('model', '');
 
   if (customModel) {
     return customModel;

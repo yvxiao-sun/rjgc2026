@@ -1,0 +1,120 @@
+{
+  "classDiagram": "classDiagram\n    class User {\n        +userId: Long\n        +username: String\n        +email: String\n        +password: String\n        +nickname: String\n        +avatar: String\n        +bio: String\n        +registerTime: DateTime\n        +role: UserRole\n        +register()\n        +login()\n        +updateProfile()\n        +deleteComment()\n    }\n\n    class Author {\n        +articleCount: int\n        +totalViews: long\n        +writeArticle()\n        +editArticle()\n        +deleteArticle()\n        +manageArticles()\n    }\n\n    class Admin {\n        +manageAllArticles()\n        +manageAllComments()\n        +manageUsers()\n        +auditContent()\n    }\n\n    class Article {\n        +articleId: Long\n        +title: String\n        +content: String\n        +summary: String\n        +publishTime: DateTime\n        +updateTime: DateTime\n        +viewCount: long\n        +status: ArticleStatus\n        +publish()\n        +edit()\n        +delete()\n        +incrementViews()\n    }\n\n    class Comment {\n        +commentId: Long\n        +content: String\n        +commentTime: DateTime\n        +status: CommentStatus\n        +addReply()\n        +delete()\n        +getReplies()\n    }\n\n    class Category {\n        +categoryId: Long\n        +name: String\n        +description: String\n        +createTime: DateTime\n        +addArticle()\n        +removeArticle()\n        +getArticles()\n    }\n\n    class Tag {\n        +tagId: Long\n        +name: String\n        +createTime: DateTime\n        +getArticles()\n    }\n\n    class ArticleTag {\n        +articleId: Long\n        +tagId: Long\n    }\n\n    class Session {\n        +sessionId: String\n        +userId: Long\n        +loginTime: DateTime\n        +expireTime: DateTime\n        +token: String\n        +isValid()\n        +refresh()\n        +invalidate()\n    }\n\n    class AuditLog {\n        +logId: Long\n        +operatorId: Long\n        +actionType: ActionType\n        +targetType: TargetType\n        +targetId: Long\n        +operationTime: DateTime\n        +details: String\n        +record()\n        +query()\n    }\n\n    %% 继承关系\n    User <|-- Author\n    User <|-- Admin\n\n    %% 关联关系\n    User \"1\" --> \"*\" Article : writes\n    User \"1\" --> \"*\" Comment : creates\n    Article \"1\" --> \"*\" Comment : has\n    Comment \"*\" --> \"0..1\" Comment : replies to\n    Article \"*\" --> \"1\" Category : belongs to\n    Article \"*\" --> \"*\" Tag : tagged with\n    ArticleTag \"*\" --> \"1\" Article : references\n    ArticleTag \"*\" --> \"1\" Tag : references\n    User \"1\" --> \"*\" Session : has\n    User \"1\" --> \"*\" AuditLog : generates\n    Article \"1\" --> \"*\" AuditLog : generates\n    Comment \"1\" --> \"*\" AuditLog : generates\n\n    %% 聚合关系\n    Category \"1\" o--> \"*\" Article : contains\n\n    %% 组合关系\n    Article \"1\" *--> \"*\" Comment : contains\n    User \"1\" *--> \"*\" Session : manages",
+  "relationships": [
+    {
+      "type": "泛化（继承）",
+      "description": "User是基类，Author和Admin继承自User，共享用户基本属性和方法，并扩展各自特有功能",
+      "details": [
+        {
+          "parent": "User",
+          "child": "Author",
+          "multiplicity": "1对多（一个User可以是多个Author实例？实际为角色继承，一个User实例对应一个角色）",
+          "description": "Author继承User，增加文章管理相关方法"
+        },
+        {
+          "parent": "User",
+          "child": "Admin",
+          "multiplicity": "1对1（一个User实例对应一个Admin角色）",
+          "description": "Admin继承User，增加内容管理和用户管理相关方法"
+        }
+      ]
+    },
+    {
+      "type": "关联",
+      "description": "类之间的语义关联，表示对象间的结构关系",
+      "details": [
+        {
+          "from": "User",
+          "to": "Article",
+          "multiplicity": "1对多（一个用户可以撰写多篇文章）",
+          "description": "用户（作者角色）撰写文章"
+        },
+        {
+          "from": "User",
+          "to": "Comment",
+          "multiplicity": "1对多（一个用户可以发表多条评论）",
+          "description": "用户发表评论"
+        },
+        {
+          "from": "Article",
+          "to": "Comment",
+          "multiplicity": "1对多（一篇文章可以有多条评论）",
+          "description": "文章包含评论"
+        },
+        {
+          "from": "Comment",
+          "to": "Comment",
+          "multiplicity": "多对0..1（一条评论可以有多个回复，但只能有一个父评论）",
+          "description": "评论的嵌套回复关系（自关联）"
+        },
+        {
+          "from": "Article",
+          "to": "Category",
+          "multiplicity": "多对1（多篇文章可以属于同一个分类）",
+          "description": "文章属于一个分类"
+        },
+        {
+          "from": "Article",
+          "to": "Tag",
+          "multiplicity": "多对多（一篇文章可以有多个标签，一个标签可以标记多篇文章）",
+          "description": "文章和标签的多对多关系，通过ArticleTag关联表实现"
+        },
+        {
+          "from": "User",
+          "to": "Session",
+          "multiplicity": "1对多（一个用户可以有多个活跃会话）",
+          "description": "用户拥有登录会话"
+        },
+        {
+          "from": "User",
+          "to": "AuditLog",
+          "multiplicity": "1对多（一个用户可以有多个操作日志）",
+          "description": "用户产生操作日志"
+        },
+        {
+          "from": "Article",
+          "to": "AuditLog",
+          "multiplicity": "1对多（一篇文章可以有多个操作日志）",
+          "description": "文章相关的操作记录"
+        },
+        {
+          "from": "Comment",
+          "to": "AuditLog",
+          "multiplicity": "1对多（一条评论可以有多个操作日志）",
+          "description": "评论相关的操作记录"
+        }
+      ]
+    },
+    {
+      "type": "聚合",
+      "description": "整体与部分的关系，部分可以独立存在",
+      "details": [
+        {
+          "whole": "Category",
+          "part": "Article",
+          "multiplicity": "1对多（一个分类包含多篇文章）",
+          "description": "分类聚合文章，但文章可以独立存在（即使分类被删除，文章可以重新分类）"
+        }
+      ]
+    },
+    {
+      "type": "组合",
+      "description": "更强的整体与部分关系，部分不能独立于整体存在",
+      "details": [
+        {
+          "whole": "Article",
+          "part": "Comment",
+          "multiplicity": "1对多（一篇文章包含多条评论）",
+          "description": "文章组合评论，评论不能脱离文章独立存在（文章删除时评论也删除）"
+        },
+        {
+          "whole": "User",
+          "part": "Session",
+          "multiplicity": "1对多（一个用户管理多个会话）",
+          "description": "用户组合会话，会话不能脱离用户存在（用户注销时会话失效）"
+        }
+      ]
+    }
+  ],
+  "description": "领域模型包含8个核心类，通过继承、关联、聚合和组合关系构建完整的博客系统领域模型。User作为基类派生出Author和Admin，Article与Comment、Category、Tag之间存在多种关联关系，同时通过AuditLog实现操作审计。多重性约束确保了数据完整性和业务规则的实现。"
+}

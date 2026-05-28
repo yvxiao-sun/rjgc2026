@@ -1,0 +1,107 @@
+{
+  "classDiagram": "classDiagram\n    class User {\n        +String userId\n        +String name\n        +String department\n        +String position\n        +String role\n        +submitRequest()\n        +approveNode()\n        +viewRequests()\n    }\n\n    class ApprovalType {\n        +String typeId\n        +String typeName\n        +String description\n        +JSON formTemplate\n        +JSON workflowDefinition\n        +createType()\n        +updateType()\n        +deleteType()\n    }\n\n    class ApprovalRequest {\n        +String requestId\n        +String requestNumber\n        +String title\n        +String content\n        +Decimal amount\n        +Integer leaveDays\n        +DateTime submitTime\n        +String status\n        +JSON formData\n        +submit()\n        +cancel()\n        +resubmit()\n    }\n\n    class ApprovalNode {\n        +String nodeId\n        +String nodeName\n        +String approvalStatus\n        +String approvalComment\n        +DateTime approvalTime\n        +Integer nodeOrder\n        +Boolean isCounterSign\n        +Boolean isOrSign\n        +approve()\n        +reject()\n        +transfer()\n    }\n\n    class Attachment {\n        +String attachmentId\n        +String fileName\n        +String filePath\n        +Long fileSize\n        +DateTime uploadTime\n        +download()\n        +preview()\n    }\n\n    class WorkflowEngine {\n        +String engineId\n        +JSON workflowContext\n        +createNextNode()\n        +evaluateConditions()\n        +handleCounterSign()\n        +handleOrSign()\n        +executePostAction()\n    }\n\n    class Notification {\n        +String notificationId\n        +String type\n        +String content\n        +Boolean isRead\n        +DateTime createTime\n        +markAsRead()\n    }\n\n    class Employee {\n        +String employeeLevel\n        +submitRequest()\n    }\n\n    class DepartmentManager {\n        +String managedDepartment\n        +approveDepartmentRequest()\n    }\n\n    class FinanceStaff {\n        +String financeScope\n        +approveFinanceRequest()\n    }\n\n    class GeneralManager {\n        +Decimal approvalLimit\n        +approveHighAmountRequest()\n    }\n\n    class SystemAdmin {\n        +String adminLevel\n        +configureWorkflow()\n    }\n\n    User <|-- Employee : extends\n    User <|-- DepartmentManager : extends\n    User <|-- FinanceStaff : extends\n    User <|-- GeneralManager : extends\n    User <|-- SystemAdmin : extends\n\n    ApprovalType \"1\" --> \"*\" ApprovalRequest : defines\n    ApprovalRequest \"1\" --> \"*\" ApprovalNode : contains\n    ApprovalRequest \"1\" --> \"*\" Attachment : has\n    ApprovalRequest \"*\" --> \"1\" User : submitted by\n    ApprovalNode \"*\" --> \"1\" User : assigned to\n    ApprovalNode \"*\" --> \"1\" ApprovalRequest : belongs to\n    WorkflowEngine \"1\" --> \"1\" ApprovalRequest : processes\n    WorkflowEngine \"1\" --> \"1\" ApprovalType : references\n    User \"1\" --> \"*\" Notification : receives\n    ApprovalRequest \"1\" --> \"*\" Notification : triggers",
+  "relationships": [
+    {
+      "type": "泛化关系（继承）",
+      "description": "User作为基类，定义了所有用户的公共属性和行为。Employee、DepartmentManager、FinanceStaff、GeneralManager、SystemAdmin继承自User，各自扩展了特定角色属性和方法。",
+      "details": [
+        "Employee: 普通员工，可以提交审批申请",
+        "DepartmentManager: 部门主管，可以审批部门内申请",
+        "FinanceStaff: 财务人员，可以审批报销、采购类申请",
+        "GeneralManager: 总经理，可以审批高额申请",
+        "SystemAdmin: 系统管理员，可以配置审批流程"
+      ]
+    },
+    {
+      "type": "关联关系",
+      "description": "类之间的语义关联，表示对象之间的结构关系",
+      "details": [
+        {
+          "from": "ApprovalType",
+          "to": "ApprovalRequest",
+          "multiplicity": "1对多",
+          "description": "一个审批类型可以定义多个审批申请实例，每个申请必须属于一个审批类型"
+        },
+        {
+          "from": "ApprovalRequest",
+          "to": "User",
+          "multiplicity": "多对1",
+          "description": "多个审批申请可以由同一个用户提交，每个申请只有一个申请人"
+        },
+        {
+          "from": "ApprovalNode",
+          "to": "User",
+          "multiplicity": "多对1",
+          "description": "多个审批节点可以分配给同一个审批人，每个节点只有一个审批人"
+        },
+        {
+          "from": "ApprovalNode",
+          "to": "ApprovalRequest",
+          "multiplicity": "多对1",
+          "description": "多个审批节点属于同一个审批申请，每个节点只属于一个申请"
+        },
+        {
+          "from": "User",
+          "to": "Notification",
+          "multiplicity": "1对多",
+          "description": "一个用户可以接收多个通知，每个通知只发送给一个用户"
+        },
+        {
+          "from": "ApprovalRequest",
+          "to": "Notification",
+          "multiplicity": "1对多",
+          "description": "一个审批申请可以触发多个通知（如待审批通知、驳回通知等）"
+        }
+      ]
+    },
+    {
+      "type": "聚合/组合关系",
+      "description": "表示整体与部分的关系，组合关系更强，部分的生命周期依赖于整体",
+      "details": [
+        {
+          "relation": "组合关系",
+          "from": "ApprovalRequest",
+          "to": "ApprovalNode",
+          "multiplicity": "1对多",
+          "description": "审批申请包含多个审批节点记录。审批节点是审批申请的一部分，当审批申请被删除时，其关联的审批节点也应被删除。节点不能独立于申请存在。"
+        },
+        {
+          "relation": "组合关系",
+          "from": "ApprovalRequest",
+          "to": "Attachment",
+          "multiplicity": "1对多",
+          "description": "审批申请包含多个附件。附件是申请的一部分，当申请被删除时，附件也应被删除。附件不能独立于申请存在。"
+        },
+        {
+          "relation": "聚合关系",
+          "from": "WorkflowEngine",
+          "to": "ApprovalRequest",
+          "multiplicity": "1对1",
+          "description": "工作流引擎处理审批申请，但引擎本身是独立的服务组件，不依赖于某个具体的申请存在。引擎可以处理多个申请，但同一时刻只处理一个申请。"
+        },
+        {
+          "relation": "聚合关系",
+          "from": "WorkflowEngine",
+          "to": "ApprovalType",
+          "multiplicity": "1对1",
+          "description": "工作流引擎引用审批类型的流程定义来驱动流转，但引擎不依赖于某个具体的审批类型。"
+        }
+      ]
+    },
+    {
+      "type": "多重性约束总结",
+      "description": "所有类之间关系的多重性约束汇总",
+      "constraints": [
+        "User (1) <---> (*) ApprovalRequest (作为申请人)",
+        "User (1) <---> (*) ApprovalNode (作为审批人)",
+        "User (1) <---> (*) Notification (作为接收人)",
+        "ApprovalType (1) <---> (*) ApprovalRequest",
+        "ApprovalRequest (1) <---> (*) ApprovalNode (组合)",
+        "ApprovalRequest (1) <---> (*) Attachment (组合)",
+        "ApprovalRequest (1) <---> (*) Notification",
+        "WorkflowEngine (1) <---> (1) ApprovalRequest (当前处理)",
+        "WorkflowEngine (1) <---> (1) ApprovalType (引用定义)"
+      ]
+    }
+  ]
+}

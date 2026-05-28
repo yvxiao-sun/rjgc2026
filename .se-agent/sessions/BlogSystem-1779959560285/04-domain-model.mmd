@@ -1,0 +1,122 @@
+classDiagram
+    class User {
+        +String userId
+        +String name
+        +String department
+        +String position
+        +String role
+        +submitRequest()
+        +approveNode()
+        +viewRequests()
+    }
+
+    class ApprovalType {
+        +String typeId
+        +String typeName
+        +String description
+        +JSON formTemplate
+        +JSON workflowDefinition
+        +createType()
+        +updateType()
+        +deleteType()
+    }
+
+    class ApprovalRequest {
+        +String requestId
+        +String requestNumber
+        +String title
+        +String content
+        +Decimal amount
+        +Integer leaveDays
+        +DateTime submitTime
+        +String status
+        +JSON formData
+        +submit()
+        +cancel()
+        +resubmit()
+    }
+
+    class ApprovalNode {
+        +String nodeId
+        +String nodeName
+        +String approvalStatus
+        +String approvalComment
+        +DateTime approvalTime
+        +Integer nodeOrder
+        +Boolean isCounterSign
+        +Boolean isOrSign
+        +approve()
+        +reject()
+        +transfer()
+    }
+
+    class Attachment {
+        +String attachmentId
+        +String fileName
+        +String filePath
+        +Long fileSize
+        +DateTime uploadTime
+        +download()
+        +preview()
+    }
+
+    class WorkflowEngine {
+        +String engineId
+        +JSON workflowContext
+        +createNextNode()
+        +evaluateConditions()
+        +handleCounterSign()
+        +handleOrSign()
+        +executePostAction()
+    }
+
+    class Notification {
+        +String notificationId
+        +String type
+        +String content
+        +Boolean isRead
+        +DateTime createTime
+        +markAsRead()
+    }
+
+    class Employee {
+        +String employeeLevel
+        +submitRequest()
+    }
+
+    class DepartmentManager {
+        +String managedDepartment
+        +approveDepartmentRequest()
+    }
+
+    class FinanceStaff {
+        +String financeScope
+        +approveFinanceRequest()
+    }
+
+    class GeneralManager {
+        +Decimal approvalLimit
+        +approveHighAmountRequest()
+    }
+
+    class SystemAdmin {
+        +String adminLevel
+        +configureWorkflow()
+    }
+
+    User <|-- Employee : extends
+    User <|-- DepartmentManager : extends
+    User <|-- FinanceStaff : extends
+    User <|-- GeneralManager : extends
+    User <|-- SystemAdmin : extends
+
+    ApprovalType "1" --> "*" ApprovalRequest : defines
+    ApprovalRequest "1" --> "*" ApprovalNode : contains
+    ApprovalRequest "1" --> "*" Attachment : has
+    ApprovalRequest "*" --> "1" User : submitted by
+    ApprovalNode "*" --> "1" User : assigned to
+    ApprovalNode "*" --> "1" ApprovalRequest : belongs to
+    WorkflowEngine "1" --> "1" ApprovalRequest : processes
+    WorkflowEngine "1" --> "1" ApprovalType : references
+    User "1" --> "*" Notification : receives
+    ApprovalRequest "1" --> "*" Notification : triggers
