@@ -1,0 +1,19 @@
+{
+  "stateDiagrams": [
+    {
+      "objectName": "Article（文章）",
+      "description": "文章从创建到删除的完整生命周期，包含草稿、发布、审核等状态",
+      "diagram": "stateDiagram-v2\n    [*] --> Draft : 创建文章\n    Draft --> Published : 发布\n    Draft --> Deleted : 删除草稿\n    Published --> Draft : 撤回为草稿\n    Published --> Archived : 归档\n    Published --> Deleted : 删除\n    Archived --> Published : 重新发布\n    Archived --> Deleted : 删除\n    Deleted --> [*] : 永久删除\n\n    state Draft {\n        [*] --> Editing\n        Editing --> Editing : 保存修改\n        Editing --> Preview : 预览\n        Preview --> Editing : 继续编辑\n    }\n\n    state Published {\n        [*] --> Visible\n        Visible --> Visible : 更新内容\n        Visible --> Hidden : 隐藏\n        Hidden --> Visible : 显示\n    }\n\n    state Archived {\n        [*] --> Inactive\n        Inactive --> Inactive : 只读\n    }"
+    },
+    {
+      "objectName": "Comment（评论）",
+      "description": "评论从创建到删除的生命周期，包含审核、回复等状态转换",
+      "diagram": "stateDiagram-v2\n    [*] --> Pending : 提交评论\n    Pending --> Approved : 审核通过\n    Pending --> Rejected : 审核拒绝\n    Pending --> Deleted : 用户删除\n    Approved --> Deleted : 用户/管理员删除\n    Approved --> Spam : 标记为垃圾\n    Spam --> Approved : 取消垃圾标记\n    Spam --> Deleted : 删除\n    Rejected --> [*] : 丢弃\n    Deleted --> [*] : 永久删除\n\n    state Approved {\n        [*] --> Visible\n        Visible --> Visible : 被回复\n        Visible --> Hidden : 折叠\n        Hidden --> Visible : 展开\n    }\n\n    state Pending {\n        [*] --> AwaitingReview\n        AwaitingReview --> AwaitingReview : 等待审核\n    }"
+    },
+    {
+      "objectName": "User（用户）",
+      "description": "用户账号从注册到注销的完整生命周期，包含角色变更和账号状态管理",
+      "diagram": "stateDiagram-v2\n    [*] --> Registered : 完成注册\n    Registered --> Active : 邮箱验证\n    Registered --> Inactive : 未验证\n    Active --> Inactive : 长时间未登录\n    Inactive --> Active : 重新登录\n    Active --> Banned : 管理员封禁\n    Banned --> Active : 管理员解封\n    Active --> Deleted : 用户注销\n    Banned --> Deleted : 管理员删除\n    Deleted --> [*] : 账号移除\n\n    state Active {\n        [*] --> Normal\n        Normal --> Author : 升级为作者\n        Author --> Admin : 升级为管理员\n        Admin --> Author : 降级\n        Author --> Normal : 降级\n    }\n\n    state Banned {\n        [*] --> Temporary\n        Temporary --> Permanent : 多次违规\n        Permanent --> [*] : 永久封禁\n    }"
+    }
+  ]
+}

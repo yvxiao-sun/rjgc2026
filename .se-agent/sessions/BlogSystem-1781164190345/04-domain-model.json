@@ -1,0 +1,142 @@
+{
+  "classDiagram": "classDiagram\n    class User {\n        +String userId\n        +String name\n        +String department\n        +String position\n        +String role\n        +submitRequest()\n        +approveRequest()\n        +viewHistory()\n    }\n\n    class ApprovalType {\n        +String typeId\n        +String typeName\n        +String description\n        +JSON formTemplate\n        +JSON flowDefinition\n        +createType()\n        +updateType()\n        +deleteType()\n    }\n\n    class ApprovalRequest {\n        +String requestId\n        +String requestNumber\n        +String title\n        +String content\n        +Double amount\n        +Integer leaveDays\n        +DateTime applyTime\n        +String status\n        +submit()\n        +cancel()\n        +resubmit()\n    }\n\n    class ApprovalNode {\n        +String nodeId\n        +String nodeName\n        +String status\n        +String comment\n        +DateTime approveTime\n        +Integer nodeOrder\n        +approve()\n        +reject()\n        +transfer()\n    }\n\n    class Attachment {\n        +String attachmentId\n        +String fileName\n        +String filePath\n        +Long fileSize\n        +DateTime uploadTime\n        +download()\n        +preview()\n    }\n\n    class FlowDefinition {\n        +String flowId\n        +JSON conditionRules\n        +String signMode\n        +addNode()\n        +removeNode()\n        +setCondition()\n    }\n\n    class FlowNode {\n        +String nodeDefId\n        +String nodeName\n        +String approverRole\n        +Integer nodeOrder\n        +JSON timeoutConfig\n        +Boolean required\n    }\n\n    class ApprovalHistory {\n        +String historyId\n        +String operationType\n        +DateTime operationTime\n        +String detail\n        +queryHistory()\n    }\n\n    class Notification {\n        +String notificationId\n        +String type\n        +String message\n        +Boolean isRead\n        +DateTime createTime\n        +markAsRead()\n        +sendNotification()\n    }\n\n    %% 关联关系\n    User \"1\" --> \"*\" ApprovalRequest : 提交\n    User \"1\" --> \"*\" ApprovalNode : 审批\n    User \"1\" --> \"*\" ApprovalHistory : 操作\n    User \"1\" --> \"*\" Notification : 接收\n\n    ApprovalType \"1\" --> \"*\" ApprovalRequest : 分类\n    ApprovalType \"1\" --> \"1\" FlowDefinition : 定义流程\n\n    ApprovalRequest \"1\" --> \"*\" ApprovalNode : 包含\n    ApprovalRequest \"1\" --> \"*\" Attachment : 包含\n    ApprovalRequest \"1\" --> \"*\" ApprovalHistory : 产生\n    ApprovalRequest \"1\" --> \"*\" Notification : 触发\n\n    FlowDefinition \"1\" --> \"*\" FlowNode : 包含\n\n    %% 聚合关系\n    ApprovalRequest o-- ApprovalNode : 聚合\n    ApprovalRequest o-- Attachment : 聚合\n\n    %% 组合关系\n    FlowDefinition *-- FlowNode : 组合\n\n    %% 依赖关系\n    ApprovalNode ..> User : 依赖\n    ApprovalNode ..> ApprovalRequest : 依赖\n    ApprovalHistory ..> User : 依赖\n    ApprovalHistory ..> ApprovalRequest : 依赖\n    Notification ..> User : 依赖\n    Notification ..> ApprovalRequest : 依赖",
+  "relationships": [
+    {
+      "type": "关联",
+      "from": "User",
+      "to": "ApprovalRequest",
+      "description": "用户提交审批申请",
+      "multiplicity": "1对多",
+      "detail": "一个用户可以提交多个审批申请，一个审批申请只能属于一个用户"
+    },
+    {
+      "type": "关联",
+      "from": "User",
+      "to": "ApprovalNode",
+      "description": "用户审批节点",
+      "multiplicity": "1对多",
+      "detail": "一个用户可以审批多个节点，一个审批节点只能关联一个审批人"
+    },
+    {
+      "type": "关联",
+      "from": "User",
+      "to": "ApprovalHistory",
+      "description": "用户产生操作历史",
+      "multiplicity": "1对多",
+      "detail": "一个用户可以产生多条操作历史记录"
+    },
+    {
+      "type": "关联",
+      "from": "User",
+      "to": "Notification",
+      "description": "用户接收通知",
+      "multiplicity": "1对多",
+      "detail": "一个用户可以接收多条通知消息"
+    },
+    {
+      "type": "关联",
+      "from": "ApprovalType",
+      "to": "ApprovalRequest",
+      "description": "审批类型分类申请",
+      "multiplicity": "1对多",
+      "detail": "一个审批类型可以对应多个审批申请，一个审批申请只能属于一个审批类型"
+    },
+    {
+      "type": "关联",
+      "from": "ApprovalType",
+      "to": "FlowDefinition",
+      "description": "审批类型定义流程",
+      "multiplicity": "1对1",
+      "detail": "一个审批类型有且仅有一个流程定义，一个流程定义只属于一个审批类型"
+    },
+    {
+      "type": "聚合",
+      "from": "ApprovalRequest",
+      "to": "ApprovalNode",
+      "description": "审批申请包含审批节点",
+      "multiplicity": "1对多",
+      "detail": "一个审批申请包含多个审批节点记录，审批节点可以独立存在（如被其他申请引用）"
+    },
+    {
+      "type": "聚合",
+      "from": "ApprovalRequest",
+      "to": "Attachment",
+      "description": "审批申请包含附件",
+      "multiplicity": "1对多",
+      "detail": "一个审批申请可以包含多个附件，附件可以独立存在（如被其他申请引用）"
+    },
+    {
+      "type": "组合",
+      "from": "FlowDefinition",
+      "to": "FlowNode",
+      "description": "流程定义包含流程节点",
+      "multiplicity": "1对多",
+      "detail": "一个流程定义包含多个流程节点，流程节点不能脱离流程定义独立存在"
+    },
+    {
+      "type": "关联",
+      "from": "ApprovalRequest",
+      "to": "ApprovalHistory",
+      "description": "审批申请产生操作历史",
+      "multiplicity": "1对多",
+      "detail": "一个审批申请可以产生多条操作历史记录"
+    },
+    {
+      "type": "关联",
+      "from": "ApprovalRequest",
+      "to": "Notification",
+      "description": "审批申请触发通知",
+      "multiplicity": "1对多",
+      "detail": "一个审批申请可以触发多条通知消息"
+    },
+    {
+      "type": "依赖",
+      "from": "ApprovalNode",
+      "to": "User",
+      "description": "审批节点依赖用户作为审批人",
+      "multiplicity": "多对1",
+      "detail": "审批节点需要关联一个用户作为审批人"
+    },
+    {
+      "type": "依赖",
+      "from": "ApprovalNode",
+      "to": "ApprovalRequest",
+      "description": "审批节点依赖审批申请",
+      "multiplicity": "多对1",
+      "detail": "审批节点必须属于一个审批申请"
+    },
+    {
+      "type": "依赖",
+      "from": "ApprovalHistory",
+      "to": "User",
+      "description": "操作历史依赖操作人",
+      "multiplicity": "多对1",
+      "detail": "操作历史需要记录操作人信息"
+    },
+    {
+      "type": "依赖",
+      "from": "ApprovalHistory",
+      "to": "ApprovalRequest",
+      "description": "操作历史依赖审批申请",
+      "multiplicity": "多对1",
+      "detail": "操作历史必须关联一个审批申请"
+    },
+    {
+      "type": "依赖",
+      "from": "Notification",
+      "to": "User",
+      "description": "通知依赖接收人",
+      "multiplicity": "多对1",
+      "detail": "通知需要指定接收人"
+    },
+    {
+      "type": "依赖",
+      "from": "Notification",
+      "to": "ApprovalRequest",
+      "description": "通知依赖审批申请",
+      "multiplicity": "多对1",
+      "detail": "通知需要关联触发它的审批申请"
+    }
+  ],
+  "summary": "领域模型共包含9个类，识别出16组关系。核心关系包括：User与ApprovalRequest的1对多提交关系、ApprovalType与ApprovalRequest的1对多分类关系、ApprovalRequest与ApprovalNode的1对多聚合关系、FlowDefinition与FlowNode的1对多组合关系。模型涵盖了审批流程的完整生命周期，从类型定义、申请提交、节点审批到历史记录和通知推送。"
+}

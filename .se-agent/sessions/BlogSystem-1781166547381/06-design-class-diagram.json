@@ -1,0 +1,34 @@
+{
+  "classDiagram": "classDiagram\n    class User {\n        -String userId\n        -String username\n        -String email\n        -String passwordHash\n        -String nickname\n        -String avatar\n        -String bio\n        -DateTime registerTime\n        -String role\n        -Boolean isActive\n        -DateTime lastLoginTime\n        +register(username, email, password): Boolean\n        +login(usernameOrEmail, password): Session\n        +logout(): void\n        +updateProfile(nickname, avatar, bio): Boolean\n        +changePassword(oldPassword, newPassword): Boolean\n        +getArticles(): List~Article~\n        +getComments(): List~Comment~\n        #encryptPassword(password): String\n        #validatePassword(password): Boolean\n    }\n\n    class Author {\n        +publishArticle(title, content, categoryId, tags): Article\n        +editArticle(articleId, title, content, categoryId, tags): Boolean\n        +deleteArticle(articleId): Boolean\n        +getMyArticles(status): List~Article~\n        +getArticleStats(articleId): ArticleStats\n    }\n\n    class Admin {\n        +manageAllArticles(): List~Article~\n        +manageAllComments(): List~Comment~\n        +manageUsers(): List~User~\n        +deleteAnyArticle(articleId): Boolean\n        +deleteAnyComment(commentId): Boolean\n        +lockUser(userId): Boolean\n        +unlockUser(userId): Boolean\n        +getSystemStats(): SystemStats\n    }\n\n    class Article {\n        -String articleId\n        -String title\n        -String content\n        -String summary\n        -String categoryId\n        -List~String~ tagIds\n        -DateTime publishTime\n        -DateTime updateTime\n        -int viewCount\n        -String status\n        -String authorId\n        +publish(): Boolean\n        +edit(title, content, categoryId, tags): Boolean\n        +delete(): Boolean\n        +archive(): Boolean\n        +restore(): Boolean\n        +incrementViewCount(): void\n        +getComments(): List~Comment~\n        +getAuthor(): User\n        +getCategory(): Category\n        +getTags(): List~Tag~\n        -generateSummary(content): String\n        -validateContent(): Boolean\n    }\n\n    class Comment {\n        -String commentId\n        -String content\n        -DateTime commentTime\n        -String userId\n        -String articleId\n        -String parentCommentId\n        -String status\n        +create(content, articleId, parentCommentId): Boolean\n        +edit(newContent): Boolean\n        +delete(): Boolean\n        +getReplies(): List~Comment~\n        +getAuthor(): User\n        +getArticle(): Article\n        +getParentComment(): Comment\n        -validateContent(): Boolean\n    }\n\n    class Category {\n        -String categoryId\n        -String name\n        -String description\n        -DateTime createTime\n        +create(name, description): Boolean\n        +update(name, description): Boolean\n        +delete(): Boolean\n        +getArticles(): List~Article~\n        +getArticleCount(): int\n    }\n\n    class Tag {\n        -String tagId\n        -String name\n        -DateTime createTime\n        +create(name): Boolean\n        +update(name): Boolean\n        +delete(): Boolean\n        +getArticles(): List~Article~\n        +getArticleCount(): int\n    }\n\n    class ArticleTag {\n        -String id\n        -String articleId\n        -String tagId\n        +addTag(articleId, tagId): Boolean\n        +removeTag(articleId, tagId): Boolean\n        +getArticlesByTag(tagId): List~Article~\n        +getTagsByArticle(articleId): List~Tag~\n    }\n\n    class Session {\n        -String sessionId\n        -String userId\n        -DateTime createTime\n        -DateTime expireTime\n        -String ipAddress\n        +isValid(): Boolean\n        +refresh(): void\n        +invalidate(): void\n    }\n\n    class ArticleStats {\n        -int totalViews\n        -int totalComments\n        -int totalLikes\n        -DateTime lastViewTime\n        +getStats(): Map\n    }\n\n    class SystemStats {\n        -int totalUsers\n        -int totalArticles\n        -int totalComments\n        -int activeUsersToday\n        +generateReport(): Report\n    }\n\n    User <|-- Author : extends\n    User <|-- Admin : extends\n    User \"1\" --> \"*\" Article : writes\n    User \"1\" --> \"*\" Comment : creates\n    User \"1\" --> \"*\" Session : has\n    Article \"1\" --> \"*\" Comment : contains\n    Article \"*\" --> \"1\" Category : belongs to\n    Article \"*\" --> \"*\" Tag : tagged with\n    ArticleTag \"*\" --> \"1\" Article : references\n    ArticleTag \"*\" --> \"1\" Tag : references\n    Comment \"*\" --> \"0..1\" Comment : replies to\n    Article \"1\" --> \"1\" ArticleStats : has stats\n    Admin \"1\" --> \"1\" SystemStats : generates",
+  "summary": {
+    "totalClasses": 9,
+    "coreClasses": [
+      "User",
+      "Article",
+      "Comment",
+      "Category",
+      "Tag"
+    ],
+    "supportClasses": [
+      "ArticleTag",
+      "Session",
+      "ArticleStats",
+      "SystemStats"
+    ],
+    "designDecisions": [
+      "User类使用passwordHash存储加密密码，提高安全性",
+      "Article和Comment包含status字段支持状态管理",
+      "Session类独立管理用户会话，支持超时和IP追踪",
+      "ArticleStats和SystemStats作为统计类，分离统计逻辑",
+      "所有实体类使用私有属性，通过公有方法访问",
+      "ArticleTag作为关联类处理多对多关系",
+      "Author和Admin继承User，扩展特有方法",
+      "Comment支持嵌套回复，通过parentCommentId实现"
+    ],
+    "visibilityRules": [
+      "私有属性(-)：核心数据字段，防止外部直接修改",
+      "公有方法(+)：对外提供的服务接口",
+      "保护方法(#)：子类可访问的内部方法"
+    ]
+  }
+}

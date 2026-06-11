@@ -1,0 +1,201 @@
+{
+  "domainModel": {
+    "classDiagram": "classDiagram\n    class User {\n        +String userId\n        +String studentId\n        +String name\n        +String password\n        +String role\n        +String department\n        +String email\n        +String phone\n        +login()\n        +logout()\n        +updateProfile()\n    }\n    class Student {\n        +String className\n        +takeExam()\n        +viewScore()\n        +applyReview()\n    }\n    class Teacher {\n        +String title\n        +createQuestion()\n        +createExamPaper()\n        +gradeSubjective()\n        +monitorExam()\n    }\n    class Admin {\n        +manageUser()\n        +configureSystem()\n    }\n    class ExamAdmin {\n        +arrangeExam()\n        +publishScore()\n        +assignGrading()\n    }\n    class Question {\n        +String questionId\n        +String type\n        +String content\n        +List~String~ options\n        +String correctAnswer\n        +String explanation\n        +String difficulty\n        +String subject\n        +String knowledgePoint\n        +List~String~ tags\n        +String creatorId\n        +DateTime createTime\n        +int version\n        +addVersion()\n        +getHistory()\n    }\n    class QuestionVersion {\n        +String versionId\n        +String questionId\n        +int versionNumber\n        +String changeContent\n        +String modifierId\n        +DateTime modifyTime\n    }\n    class ExamPaper {\n        +String paperId\n        +String paperName\n        +double totalScore\n        +double passScore\n        +int duration\n        +String creatorId\n        +DateTime createTime\n        +String status\n        +addQuestion()\n        +removeQuestion()\n        +preview()\n        +publish()\n    }\n    class PaperQuestion {\n        +String paperQuestionId\n        +String paperId\n        +String questionId\n        +int questionOrder\n        +double score\n    }\n    class ExamSchedule {\n        +String scheduleId\n        +String paperId\n        +String examName\n        +DateTime startTime\n        +DateTime endTime\n        +String scope\n        +publish()\n        +cancel()\n    }\n    class ExamRecord {\n        +String recordId\n        +String scheduleId\n        +String studentId\n        +DateTime startTime\n        +DateTime submitTime\n        +String status\n        +int switchCount\n        +double objectiveScore\n        +double subjectiveScore\n        +double totalScore\n        +startExam()\n        +submitExam()\n        +saveProgress()\n    }\n    class AnswerRecord {\n        +String answerId\n        +String recordId\n        +String questionId\n        +String studentAnswer\n        +double score\n        +boolean isGraded\n        +String graderId\n        +DateTime gradeTime\n    }\n    class Score {\n        +String scoreId\n        +String recordId\n        +double totalScore\n        +double objectiveScore\n        +double subjectiveScore\n        +String status\n        +DateTime publishTime\n        +publish()\n        +review()\n    }\n    class ReviewRequest {\n        +String reviewId\n        +String scoreId\n        +String studentId\n        +String reason\n        +String status\n        +String result\n        +String handlerId\n        +DateTime handleTime\n        +submit()\n        +process()\n    }\n    class Subject {\n        +String subjectId\n        +String subjectName\n        +String description\n    }\n    class KnowledgePoint {\n        +String pointId\n        +String pointName\n        +String subjectId\n        +String description\n    }\n    class Tag {\n        +String tagId\n        +String tagName\n        +String tagType\n    }\n    class CheatingAlert {\n        +String alertId\n        +String recordId\n        +String alertType\n        +DateTime alertTime\n        +int switchCount\n        +String status\n        +String handlerId\n        +String result\n    }\n    class ExamMonitor {\n        +String monitorId\n        +String scheduleId\n        +int participatedCount\n        +int notParticipatedCount\n        +int abnormalCount\n        +DateTime updateTime\n    }\n    class ScoreAnalysis {\n        +String analysisId\n        +String scheduleId\n        +double averageScore\n        +double maxScore\n        +double minScore\n        +double passRate\n        +Map~String,int~ scoreDistribution\n        +DateTime generateTime\n    }\n\n    %% 继承关系\n    User <|-- Student\n    User <|-- Teacher\n    User <|-- Admin\n    User <|-- ExamAdmin\n\n    %% 关联关系\n    Teacher \"1\" --> \"*\" Question : creates\n    Teacher \"1\" --> \"*\" ExamPaper : creates\n    Teacher \"*\" --> \"*\" AnswerRecord : grades\n    Teacher \"1\" --> \"*\" ReviewRequest : handles\n    Teacher \"1\" --> \"*\" CheatingAlert : monitors\n\n    Student \"1\" --> \"*\" ExamRecord : has\n    Student \"1\" --> \"*\" ReviewRequest : submits\n\n    ExamAdmin \"1\" --> \"*\" ExamSchedule : arranges\n    ExamAdmin \"1\" --> \"*\" Score : publishes\n\n    Admin \"1\" --> \"*\" User : manages\n\n    %% 聚合/组合关系\n    Question \"1\" --> \"*\" QuestionVersion : has versions\n    ExamPaper \"1\" --> \"*\" PaperQuestion : contains\n    PaperQuestion \"*\" --> \"1\" Question : references\n\n    ExamSchedule \"1\" --> \"1\" ExamPaper : uses\n    ExamSchedule \"1\" --> \"*\" ExamRecord : generates\n\n    ExamRecord \"1\" --> \"*\" AnswerRecord : includes\n    ExamRecord \"1\" --> \"1\" Score : results in\n    ExamRecord \"1\" --> \"*\" CheatingAlert : triggers\n\n    Score \"1\" --> \"*\" ReviewRequest : has reviews\n\n    Subject \"1\" --> \"*\" KnowledgePoint : contains\n    Subject \"1\" --> \"*\" Question : categorizes\n    KnowledgePoint \"1\" --> \"*\" Question : relates to\n\n    Question \"*\" --> \"*\" Tag : tagged with\n\n    ExamSchedule \"1\" --> \"1\" ExamMonitor : monitored by\n    ExamSchedule \"1\" --> \"1\" ScoreAnalysis : analyzed by",
+    "relationships": [
+      {
+        "type": "继承（泛化）",
+        "description": "User是基类，Student、Teacher、Admin、ExamAdmin是子类，继承User的基本属性，并拥有各自的特定行为",
+        "relations": [
+          {
+            "parent": "User",
+            "child": "Student",
+            "multiplicity": "1对多"
+          },
+          {
+            "parent": "User",
+            "child": "Teacher",
+            "multiplicity": "1对多"
+          },
+          {
+            "parent": "User",
+            "child": "Admin",
+            "multiplicity": "1对多"
+          },
+          {
+            "parent": "User",
+            "child": "ExamAdmin",
+            "multiplicity": "1对多"
+          }
+        ]
+      },
+      {
+        "type": "组合（Composition）",
+        "description": "强拥有关系，子类生命周期依赖于父类",
+        "relations": [
+          {
+            "from": "Question",
+            "to": "QuestionVersion",
+            "multiplicity": "1对多",
+            "description": "一个题目包含多个版本，版本随题目删除而删除"
+          },
+          {
+            "from": "ExamPaper",
+            "to": "PaperQuestion",
+            "multiplicity": "1对多",
+            "description": "一张试卷包含多个试卷题目，试卷题目随试卷删除而删除"
+          },
+          {
+            "from": "ExamRecord",
+            "to": "AnswerRecord",
+            "multiplicity": "1对多",
+            "description": "一条考试记录包含多条答题记录，答题记录随考试记录删除而删除"
+          },
+          {
+            "from": "ExamRecord",
+            "to": "Score",
+            "multiplicity": "1对1",
+            "description": "一条考试记录对应一个成绩，成绩随考试记录删除而删除"
+          },
+          {
+            "from": "Score",
+            "to": "ReviewRequest",
+            "multiplicity": "1对多",
+            "description": "一个成绩可以有多个复核申请，复核申请随成绩删除而删除"
+          }
+        ]
+      },
+      {
+        "type": "聚合（Aggregation）",
+        "description": "弱拥有关系，子类可独立存在",
+        "relations": [
+          {
+            "from": "Subject",
+            "to": "KnowledgePoint",
+            "multiplicity": "1对多",
+            "description": "一个学科包含多个知识点，知识点可独立存在"
+          },
+          {
+            "from": "ExamSchedule",
+            "to": "ExamRecord",
+            "multiplicity": "1对多",
+            "description": "一个考试安排生成多条考试记录，考试记录可独立存在"
+          }
+        ]
+      },
+      {
+        "type": "关联（Association）",
+        "description": "类之间的引用关系，无生命周期依赖",
+        "relations": [
+          {
+            "from": "Teacher",
+            "to": "Question",
+            "multiplicity": "1对多",
+            "description": "一个教师可以创建多道题目"
+          },
+          {
+            "from": "Teacher",
+            "to": "ExamPaper",
+            "multiplicity": "1对多",
+            "description": "一个教师可以创建多张试卷"
+          },
+          {
+            "from": "Teacher",
+            "to": "AnswerRecord",
+            "multiplicity": "多对多",
+            "description": "多个教师可以批阅多条答题记录"
+          },
+          {
+            "from": "Teacher",
+            "to": "ReviewRequest",
+            "multiplicity": "1对多",
+            "description": "一个教师可以处理多个复核申请"
+          },
+          {
+            "from": "Teacher",
+            "to": "CheatingAlert",
+            "multiplicity": "1对多",
+            "description": "一个教师可以监控多个作弊告警"
+          },
+          {
+            "from": "Student",
+            "to": "ExamRecord",
+            "multiplicity": "1对多",
+            "description": "一个学生可以有多条考试记录"
+          },
+          {
+            "from": "Student",
+            "to": "ReviewRequest",
+            "multiplicity": "1对多",
+            "description": "一个学生可以提交多个复核申请"
+          },
+          {
+            "from": "ExamAdmin",
+            "to": "ExamSchedule",
+            "multiplicity": "1对多",
+            "description": "一个教务管理员可以安排多场考试"
+          },
+          {
+            "from": "ExamAdmin",
+            "to": "Score",
+            "multiplicity": "1对多",
+            "description": "一个教务管理员可以发布多个成绩"
+          },
+          {
+            "from": "Admin",
+            "to": "User",
+            "multiplicity": "1对多",
+            "description": "一个系统管理员可以管理多个用户"
+          },
+          {
+            "from": "PaperQuestion",
+            "to": "Question",
+            "multiplicity": "多对1",
+            "description": "多个试卷题目可以引用同一道题目"
+          },
+          {
+            "from": "ExamSchedule",
+            "to": "ExamPaper",
+            "multiplicity": "多对1",
+            "description": "多个考试安排可以使用同一张试卷"
+          },
+          {
+            "from": "ExamRecord",
+            "to": "CheatingAlert",
+            "multiplicity": "1对多",
+            "description": "一条考试记录可以触发多个作弊告警"
+          },
+          {
+            "from": "Subject",
+            "to": "Question",
+            "multiplicity": "1对多",
+            "description": "一个学科可以包含多道题目"
+          },
+          {
+            "from": "KnowledgePoint",
+            "to": "Question",
+            "multiplicity": "1对多",
+            "description": "一个知识点可以关联多道题目"
+          },
+          {
+            "from": "Question",
+            "to": "Tag",
+            "multiplicity": "多对多",
+            "description": "一道题目可以有多个标签，一个标签可以标记多道题目"
+          },
+          {
+            "from": "ExamSchedule",
+            "to": "ExamMonitor",
+            "multiplicity": "1对1",
+            "description": "一个考试安排对应一个监控信息"
+          },
+          {
+            "from": "ExamSchedule",
+            "to": "ScoreAnalysis",
+            "multiplicity": "1对1",
+            "description": "一个考试安排对应一个成绩分析"
+          }
+        ]
+      }
+    ]
+  }
+}

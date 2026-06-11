@@ -1,0 +1,105 @@
+{
+  "classDiagram": "classDiagram\n    class User {\n        +int userId\n        +string username\n        +string email\n        +string password\n        +string nickname\n        +string avatar\n        +string bio\n        +datetime createdAt\n        +string role\n        +register()\n        +login()\n        +updateProfile()\n    }\n\n    class Author {\n        +int articleCount\n        +publishArticle()\n        +editArticle()\n        +deleteArticle()\n    }\n\n    class Admin {\n        +manageUsers()\n        +manageArticles()\n        +manageComments()\n    }\n\n    class Article {\n        +int articleId\n        +string title\n        +string content\n        +string summary\n        +datetime publishedAt\n        +datetime updatedAt\n        +int viewCount\n        +publish()\n        +edit()\n        +delete()\n    }\n\n    class Comment {\n        +int commentId\n        +string content\n        +datetime createdAt\n        +addComment()\n        +deleteComment()\n    }\n\n    class Category {\n        +int categoryId\n        +string name\n        +string description\n        +getArticles()\n    }\n\n    class Tag {\n        +int tagId\n        +string name\n        +string color\n        +getArticles()\n    }\n\n    class ArticleTag {\n        +int id\n        +int articleId\n        +int tagId\n    }\n\n    User <|-- Author : extends\n    User <|-- Admin : extends\n    User \"1\" --> \"*\" Article : writes\n    User \"1\" --> \"*\" Comment : creates\n    Article \"1\" --> \"*\" Comment : has\n    Article \"*\" --> \"1\" Category : belongs to\n    Article \"*\" --> \"*\" Tag : tagged with\n    Article \"1\" --> \"*\" ArticleTag : has\n    Tag \"1\" --> \"*\" ArticleTag : has\n    Comment \"*\" --> \"0..1\" Comment : replies to\n    Article \"1\" --> \"1\" Category : categorized by",
+  "relationships": [
+    {
+      "type": "泛化（继承）",
+      "description": "User是基类，Author和Admin继承自User，共享用户基本属性和方法，同时扩展各自特有的行为",
+      "details": [
+        {
+          "parent": "User",
+          "child": "Author",
+          "multiplicity": "1对多（一个User可以是多个Author实例？实际上一个用户只能有一个角色）",
+          "notes": "Author继承User的所有属性，额外拥有articleCount属性和文章管理方法"
+        },
+        {
+          "parent": "User",
+          "child": "Admin",
+          "multiplicity": "1对1（一个用户要么是Admin要么不是）",
+          "notes": "Admin继承User的所有属性，额外拥有系统管理方法"
+        }
+      ]
+    },
+    {
+      "type": "关联关系",
+      "description": "实体之间的业务关联，表示对象间的结构性关系",
+      "details": [
+        {
+          "from": "User",
+          "to": "Article",
+          "multiplicity": "1对*（一个用户可以撰写多篇文章）",
+          "role": "作者（author）",
+          "notes": "User作为作者与Article关联，Article中的authorId引用User的userId"
+        },
+        {
+          "from": "User",
+          "to": "Comment",
+          "multiplicity": "1对*（一个用户可以发表多条评论）",
+          "role": "评论者（commenter）",
+          "notes": "User作为评论者与Comment关联，Comment中的commenterId引用User的userId"
+        },
+        {
+          "from": "Article",
+          "to": "Comment",
+          "multiplicity": "1对*（一篇文章可以有多条评论）",
+          "role": "所属文章",
+          "notes": "Article与Comment关联，Comment中的articleId引用Article的articleId"
+        },
+        {
+          "from": "Article",
+          "to": "Category",
+          "multiplicity": "*对1（多篇文章属于同一个分类）",
+          "role": "分类归属",
+          "notes": "Article中的category字段引用Category的categoryId"
+        },
+        {
+          "from": "Comment",
+          "to": "Comment",
+          "multiplicity": "*对0..1（多条评论可以回复同一条评论）",
+          "role": "父评论/子评论",
+          "notes": "自关联关系，Comment中的parentCommentId引用自身的commentId，支持嵌套回复"
+        }
+      ]
+    },
+    {
+      "type": "聚合/组合关系",
+      "description": "表示整体与部分的关系，组合关系更强调整体控制部分的生命周期",
+      "details": [
+        {
+          "type": "组合（Composition）",
+          "from": "Article",
+          "to": "ArticleTag",
+          "multiplicity": "1对*（一篇文章可以有多个标签关联记录）",
+          "notes": "ArticleTag作为关联实体，其生命周期依赖于Article和Tag，当Article被删除时，关联的ArticleTag记录也应被删除"
+        },
+        {
+          "type": "组合（Composition）",
+          "from": "Tag",
+          "to": "ArticleTag",
+          "multiplicity": "1对*（一个标签可以关联多篇文章）",
+          "notes": "ArticleTag同样依赖于Tag，当Tag被删除时，关联的ArticleTag记录也应被删除"
+        },
+        {
+          "type": "聚合（Aggregation）",
+          "from": "Article",
+          "to": "Comment",
+          "multiplicity": "1对*（一篇文章聚合多条评论）",
+          "notes": "评论属于文章，但评论的生命周期相对独立，删除文章时可以选择保留或删除评论"
+        }
+      ]
+    },
+    {
+      "type": "多重性约束总结",
+      "description": "所有关系中的数量约束汇总",
+      "constraints": [
+        "User 1 --- * Article（一个用户可写多篇文章）",
+        "User 1 --- * Comment（一个用户可发多条评论）",
+        "Article 1 --- * Comment（一篇文章可有多条评论）",
+        "Article * --- 1 Category（多篇文章属于一个分类）",
+        "Article * --- * Tag（多篇文章可有多标签，通过ArticleTag实现）",
+        "Article 1 --- * ArticleTag（一篇文章有多个标签关联）",
+        "Tag 1 --- * ArticleTag（一个标签有多个文章关联）",
+        "Comment * --- 0..1 Comment（评论可自引用实现嵌套）"
+      ]
+    }
+  ]
+}

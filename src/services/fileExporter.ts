@@ -30,6 +30,10 @@ export class FileExporter {
       5: '05-state-diagrams',
       6: '06-design-class-diagram'
     };
+
+    if (format === 'mmd') {
+      return `${stepNames[stepId]}-diagram.md`;
+    }
     return `${stepNames[stepId]}.${format}`;
   }
 
@@ -50,6 +54,27 @@ export class FileExporter {
       return '';
     }
     return str.replace(/\\n/g, '\n').replace(/\\r/g, '\r');
+  }
+
+  private wrapMermaid(content: string): string {
+    if (!content || typeof content !== 'string') {
+      return '';
+    }
+    
+    const trimmed = content.trim();
+    
+    if (trimmed.startsWith('```mermaid') && trimmed.endsWith('```')) {
+      return content;
+    }
+    
+    if (trimmed.startsWith('```') && trimmed.endsWith('```')) {
+      return content;
+    }
+    
+    const lastChar = content[content.length - 1];
+    const hasNewlineAtEnd = lastChar === '\n' || lastChar === '\r';
+    
+    return `\`\`\`mermaid\n${content}${hasNewlineAtEnd ? '' : '\n'}\`\`\``;
   }
 
   exportStep(step: AnalysisStep, format: 'json' | 'md' | 'mmd' | 'txt' = 'json'): string | null {
@@ -152,8 +177,26 @@ export class FileExporter {
     if (parsed.description) {
       content += `**描述**: ${this.unescapeNewlines(parsed.description)}\n\n`;
     }
-    if (parsed.activityDiagram) {
-      content += `## Mermaid 活动图\n\n\`\`\`mermaid\n${this.unescapeNewlines(parsed.activityDiagram)}\n\`\`\`\n\n`;
+    
+    const diagrams = parsed.activityDiagrams || parsed.activityDiagram;
+    if (diagrams) {
+      if (Array.isArray(diagrams)) {
+        diagrams.forEach((diagram: any, index: number) => {
+          content += `## 活动图 ${index + 1}: ${diagram.name || `活动图${index + 1}`}\n\n`;
+          if (diagram.description) {
+            content += `**描述**: ${this.unescapeNewlines(diagram.description)}\n\n`;
+          }
+          if (diagram.diagram) {
+            const diagramContent = this.unescapeNewlines(diagram.diagram);
+            const lastChar = diagramContent[diagramContent.length - 1];
+            const hasNewlineAtEnd = lastChar === '\n' || lastChar === '\r';
+            content += `\`\`\`mermaid\n${diagramContent}${hasNewlineAtEnd ? '' : '\n'}\`\`\`\n\n`;
+          }
+          content += '---\n\n';
+        });
+      } else if (typeof diagrams === 'string') {
+        content += `## Mermaid 活动图\n\n${this.wrapMermaid(this.unescapeNewlines(diagrams))}\n\n`;
+      }
     }
     return content || JSON.stringify(parsed, null, 2);
   }
@@ -182,7 +225,7 @@ export class FileExporter {
       content += `**描述**: ${this.unescapeNewlines(parsed.description)}\n\n`;
     }
     if (parsed.classDiagram) {
-      content += `## Mermaid 类图\n\n\`\`\`mermaid\n${this.unescapeNewlines(parsed.classDiagram)}\n\`\`\`\n\n`;
+      content += `## Mermaid 类图\n\n${this.wrapMermaid(this.unescapeNewlines(parsed.classDiagram))}\n\n`;
     }
     if (parsed.relationships && Array.isArray(parsed.relationships)) {
       content += `## 类关系\n\n`;
@@ -196,7 +239,7 @@ export class FileExporter {
     if (parsed.domainModel) {
       const dm = parsed.domainModel;
       if (dm.classDiagram) {
-        content += `## Mermaid 类图\n\n\`\`\`mermaid\n${this.unescapeNewlines(dm.classDiagram)}\n\`\`\`\n\n`;
+        content += `## Mermaid 类图\n\n${this.wrapMermaid(this.unescapeNewlines(dm.classDiagram))}\n\n`;
       }
       if (dm.relationships && Array.isArray(dm.relationships)) {
         content += `## 类关系详情\n\n`;
@@ -222,7 +265,7 @@ export class FileExporter {
         content += `## 状态机图 ${index + 1}: ${sd.object || '未命名'}\n\n`;
         if (sd.description) content += `**描述**: ${this.unescapeNewlines(sd.description)}\n\n`;
         if (sd.diagram) {
-          content += `\`\`\`mermaid\n${this.unescapeNewlines(sd.diagram)}\n\`\`\`\n\n`;
+          content += `${this.wrapMermaid(this.unescapeNewlines(sd.diagram))}\n\n`;
         }
         content += '---\n\n';
       });
@@ -236,30 +279,65 @@ export class FileExporter {
       content += `**设计摘要**: ${this.unescapeNewlines(parsed.summary)}\n\n`;
     }
     if (parsed.classDiagram) {
-      content += `## Mermaid 设计类图\n\n\`\`\`mermaid\n${this.unescapeNewlines(parsed.classDiagram)}\n\`\`\`\n\n`;
+      content += `## Mermaid 设计类图\n\n${this.wrapMermaid(this.unescapeNewlines(parsed.classDiagram))}\n\n`;
+    }
+    if (parsed.designClassDiagram) {
+      const dcd = parsed.designClassDiagram;
+      if (dcd.summary) {
+        content += `**设计摘要**: ${this.unescapeNewlines(dcd.summary)}\n\n`;
+      }
+      if (dcd.classDiagram) {
+        content += `## Mermaid 设计类图\n\n${this.wrapMermaid(this.unescapeNewlines(dcd.classDiagram))}\n\n`;
+      }
     }
     return content || JSON.stringify(parsed, null, 2);
   }
 
   private generateMermaid(step: AnalysisStep): string {
     const parsed = this.parseStepResult(step);
+    let diagramContent = '';
 
     switch (step.id) {
       case 2:
-        return this.unescapeNewlines(parsed.activityDiagram || '');
+        if (Array.isArray(parsed.activityDiagrams) || Array.isArray(parsed.activityDiagram)) {
+          const diagrams = parsed.activityDiagrams || parsed.activityDiagram;
+          const mermaidBlocks = diagrams
+            .map((diagram: any) => {
+              const content = this.unescapeNewlines(diagram.diagram || diagram);
+              return this.wrapMermaid(content);
+            })
+            .filter((block: string) => block.trim() !== '');
+          return mermaidBlocks.join('\n\n---\n\n');
+        } else {
+          diagramContent = this.unescapeNewlines(parsed.activityDiagram || '');
+        }
+        break;
       case 4:
-        const diagram4 = parsed.classDiagram || (parsed.domainModel?.classDiagram || '');
-        return this.unescapeNewlines(diagram4);
+        diagramContent = this.unescapeNewlines(parsed.classDiagram || (parsed.domainModel?.classDiagram || ''));
+        break;
       case 5:
         if (parsed.stateDiagrams && Array.isArray(parsed.stateDiagrams)) {
-          return parsed.stateDiagrams.map((sd: any) => this.unescapeNewlines(sd.diagram || '')).join('\n\n');
+          const mermaidBlocks = parsed.stateDiagrams
+            .map((sd: any) => {
+              const content = this.unescapeNewlines(sd.diagram || '');
+              return this.wrapMermaid(content);
+            })
+            .filter((block: string) => block.trim() !== '');
+          return mermaidBlocks.join('\n\n---\n\n');
         }
-        return '';
+        break;
       case 6:
-        return this.unescapeNewlines(parsed.classDiagram || '');
+        diagramContent = this.unescapeNewlines(parsed.classDiagram || (parsed.designClassDiagram?.classDiagram || ''));
+        break;
       default:
         return '';
     }
+
+    if (!diagramContent || diagramContent.trim() === '') {
+      return '';
+    }
+
+    return this.wrapMermaid(diagramContent);
   }
 
   exportAllSteps(session: Session): string[] {

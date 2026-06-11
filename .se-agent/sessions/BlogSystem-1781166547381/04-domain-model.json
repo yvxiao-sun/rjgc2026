@@ -1,0 +1,115 @@
+{
+  "classDiagram": "classDiagram\n    class User {\n        +String userId\n        +String username\n        +String email\n        +String password\n        +String nickname\n        +String avatar\n        +String bio\n        +DateTime registerTime\n        +String role\n        +register()\n        +login()\n        +updateProfile()\n    }\n\n    class Author {\n        +publishArticle()\n        +editArticle()\n        +deleteArticle()\n    }\n\n    class Admin {\n        +manageAllArticles()\n        +manageAllComments()\n        +manageUsers()\n    }\n\n    class Article {\n        +String articleId\n        +String title\n        +String content\n        +String summary\n        +DateTime publishTime\n        +DateTime updateTime\n        +int viewCount\n        +publish()\n        +edit()\n        +delete()\n    }\n\n    class Comment {\n        +String commentId\n        +String content\n        +DateTime commentTime\n        +addComment()\n        +deleteComment()\n    }\n\n    class Category {\n        +String categoryId\n        +String name\n        +String description\n    }\n\n    class Tag {\n        +String tagId\n        +String name\n    }\n\n    class ArticleTag {\n        +String id\n        +String articleId\n        +String tagId\n    }\n\n    User <|-- Author : extends\n    User <|-- Admin : extends\n    User \"1\" --> \"*\" Article : writes\n    User \"1\" --> \"*\" Comment : creates\n    Article \"1\" --> \"*\" Comment : contains\n    Article \"*\" --> \"1\" Category : belongs to\n    Article \"*\" --> \"*\" Tag : tagged with\n    ArticleTag \"*\" --> \"1\" Article : references\n    ArticleTag \"*\" --> \"1\" Tag : references\n    Comment \"*\" --> \"0..1\" Comment : replies to\n    Article \"1\" --> \"1\" User : authored by",
+  "relationships": [
+    {
+      "type": "泛化（继承）",
+      "description": "Author和Admin继承自User，共享User的基本属性和方法，并扩展各自特有的行为",
+      "relations": [
+        {
+          "parent": "User",
+          "child": "Author",
+          "multiplicity": "1对1",
+          "description": "作者是用户的一种特殊角色，继承用户的所有属性，并增加发布、编辑、删除文章的能力"
+        },
+        {
+          "parent": "User",
+          "child": "Admin",
+          "multiplicity": "1对1",
+          "description": "管理员是用户的一种特殊角色，继承用户的所有属性，并增加管理所有内容和用户的能力"
+        }
+      ]
+    },
+    {
+      "type": "关联",
+      "description": "类之间的结构化关系，表示对象之间的连接",
+      "relations": [
+        {
+          "from": "User",
+          "to": "Article",
+          "multiplicity": "1对多（1..*）",
+          "description": "一个用户可以撰写多篇文章，一篇文章只能属于一个作者"
+        },
+        {
+          "from": "User",
+          "to": "Comment",
+          "multiplicity": "1对多（1..*）",
+          "description": "一个用户可以发表多条评论，一条评论只能属于一个用户"
+        },
+        {
+          "from": "Article",
+          "to": "Comment",
+          "multiplicity": "1对多（1..*）",
+          "description": "一篇文章可以包含多条评论，一条评论只能属于一篇文章"
+        },
+        {
+          "from": "Article",
+          "to": "Category",
+          "multiplicity": "多对1（*..1）",
+          "description": "多篇文章可以属于同一个分类，一篇文章只能属于一个分类"
+        },
+        {
+          "from": "Article",
+          "to": "Tag",
+          "multiplicity": "多对多（*..*）",
+          "description": "一篇文章可以有多个标签，一个标签可以标记多篇文章"
+        },
+        {
+          "from": "Comment",
+          "to": "Comment",
+          "multiplicity": "0对1（0..1）",
+          "description": "一条评论可以回复另一条评论（父评论），形成嵌套结构，顶级评论没有父评论"
+        }
+      ]
+    },
+    {
+      "type": "聚合/组合",
+      "description": "表示整体与部分的关系，组合关系更强，部分的生命周期依赖于整体",
+      "relations": [
+        {
+          "type": "组合",
+          "whole": "Article",
+          "part": "Comment",
+          "multiplicity": "1对多",
+          "description": "评论是文章的一部分，当文章被删除时，其所有评论也应被删除（强依赖关系）"
+        },
+        {
+          "type": "聚合",
+          "whole": "Article",
+          "part": "ArticleTag",
+          "multiplicity": "1对多",
+          "description": "文章标签关联是文章的组成部分，但标签本身可以独立存在"
+        }
+      ]
+    },
+    {
+      "type": "多重性约束",
+      "description": "详细说明各关联端的多重性限制",
+      "constraints": [
+        {
+          "relation": "User - Article",
+          "constraint": "一个用户（作者角色）必须至少撰写0篇文章，最多可撰写任意数量文章；一篇文章必须且只能有一个作者"
+        },
+        {
+          "relation": "User - Comment",
+          "constraint": "一个用户可以发表0条或多条评论；一条评论必须且只能有一个评论者"
+        },
+        {
+          "relation": "Article - Comment",
+          "constraint": "一篇文章可以有0条或多条评论；一条评论必须属于且仅属于一篇文章"
+        },
+        {
+          "relation": "Article - Category",
+          "constraint": "一篇文章必须属于且仅属于一个分类；一个分类可以包含0篇或多篇文章"
+        },
+        {
+          "relation": "Article - Tag",
+          "constraint": "一篇文章可以有0个或多个标签；一个标签可以标记0篇或多篇文章"
+        },
+        {
+          "relation": "Comment - Comment",
+          "constraint": "一条评论可以有0条或多条子评论（回复）；一条评论最多只能有一个父评论（被回复的评论）"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "classDiagram": "classDiagram\n    class User {\n        -int userId\n        -string username\n        -string email\n        -string passwordHash\n        -string nickname\n        -string avatar\n        -string bio\n        -datetime createdAt\n        -string role\n        -bool isActive\n        +User(username, email, password)\n        +login(usernameOrEmail, password): bool\n        +updateProfile(nickname, avatar, bio): bool\n        +changePassword(oldPassword, newPassword): bool\n        +getArticles(): List~Article~\n        +getComments(): List~Comment~\n        #hashPassword(password): string\n        #validateEmail(email): bool\n    }\n\n    class Author {\n        -int articleCount\n        +Author(user)\n        +publishArticle(title, content, category, tags): Article\n        +editArticle(articleId, title, content, category, tags): bool\n        +deleteArticle(articleId): bool\n        +getMyArticles(filter): List~Article~\n        +getArticleStats(): ArticleStats\n    }\n\n    class Admin {\n        +Admin(user)\n        +manageUsers(): List~User~\n        +banUser(userId): bool\n        +unbanUser(userId): bool\n        +deleteUser(userId): bool\n        +manageArticles(): List~Article~\n        +deleteAnyArticle(articleId): bool\n        +manageComments(): List~Comment~\n        +deleteAnyComment(commentId): bool\n        +getSystemStats(): SystemStats\n    }\n\n    class Article {\n        -int articleId\n        -string title\n        -string content\n        -string summary\n        -datetime publishedAt\n        -datetime updatedAt\n        -int viewCount\n        -string status\n        +Article(title, content, author)\n        +publish(): bool\n        +edit(title, content): bool\n        +delete(): bool\n        +archive(): bool\n        +incrementViewCount(): void\n        +getComments(): List~Comment~\n        +getTags(): List~Tag~\n        +setCategory(category): bool\n        +addTag(tag): bool\n        +removeTag(tag): bool\n        -generateSummary(content): string\n    }\n\n    class Comment {\n        -int commentId\n        -string content\n        -datetime createdAt\n        -string status\n        +Comment(content, author, article)\n        +edit(content): bool\n        +delete(): bool\n        +reply(content): Comment\n        +getReplies(): List~Comment~\n        +getParentComment(): Comment\n        #validateContent(content): bool\n    }\n\n    class Category {\n        -int categoryId\n        -string name\n        -string description\n        -datetime createdAt\n        +Category(name, description)\n        +update(name, description): bool\n        +delete(): bool\n        +getArticles(): List~Article~\n        +getArticleCount(): int\n    }\n\n    class Tag {\n        -int tagId\n        -string name\n        -string color\n        -datetime createdAt\n        +Tag(name, color)\n        +update(name, color): bool\n        +delete(): bool\n        +getArticles(): List~Article~\n        +getArticleCount(): int\n    }\n\n    class ArticleTag {\n        -int id\n        -int articleId\n        -int tagId\n        +ArticleTag(article, tag)\n        +remove(): bool\n    }\n\n    class ArticleService {\n        -ArticleRepository articleRepo\n        -CategoryRepository categoryRepo\n        -TagRepository tagRepo\n        +ArticleService()\n        +createArticle(author, title, content, categoryId, tagIds): Article\n        +updateArticle(articleId, title, content, categoryId, tagIds): Article\n        +deleteArticle(articleId): bool\n        +getArticleById(articleId): Article\n        +searchArticles(keyword, categoryId, tagId, page, size): Page~Article~\n        +getArticlesByAuthor(authorId): List~Article~\n    }\n\n    class CommentService {\n        -CommentRepository commentRepo\n        -ArticleRepository articleRepo\n        +CommentService()\n        +createComment(articleId, userId, content, parentCommentId): Comment\n        +deleteComment(commentId): bool\n        +getCommentsByArticle(articleId): List~Comment~\n        +getReplies(commentId): List~Comment~\n    }\n\n    class UserService {\n        -UserRepository userRepo\n        +UserService()\n        +register(username, email, password): User\n        +login(usernameOrEmail, password): User\n        +updateProfile(userId, nickname, avatar, bio): User\n        +changePassword(userId, oldPassword, newPassword): bool\n        +getUserById(userId): User\n        +getUserByUsername(username): User\n    }\n\n    class AuthService {\n        -UserRepository userRepo\n        -TokenManager tokenManager\n        +AuthService()\n        +authenticate(usernameOrEmail, password): AuthToken\n        +validateToken(token): bool\n        +refreshToken(token): AuthToken\n        +logout(token): void\n        +getCurrentUser(token): User\n    }\n\n    User <|-- Author : extends\n    User <|-- Admin : extends\n    User \"1\" --> \"*\" Article : writes\n    User \"1\" --> \"*\" Comment : creates\n    Article \"1\" --> \"*\" Comment : has\n    Article \"*\" --> \"1\" Category : belongs to\n    Article \"*\" --> \"*\" Tag : tagged with\n    Article \"1\" --> \"*\" ArticleTag : has\n    Tag \"1\" --> \"*\" ArticleTag : has\n    Comment \"*\" --> \"0..1\" Comment : replies to\n    ArticleService --> Article : manages\n    ArticleService --> Category : uses\n    ArticleService --> Tag : uses\n    CommentService --> Comment : manages\n    CommentService --> Article : references\n    UserService --> User : manages\n    AuthService --> User : authenticates",
+  "summary": {
+    "totalClasses": 11,
+    "entityClasses": [
+      "User",
+      "Author",
+      "Admin",
+      "Article",
+      "Comment",
+      "Category",
+      "Tag",
+      "ArticleTag"
+    ],
+    "serviceClasses": [
+      "ArticleService",
+      "CommentService",
+      "UserService",
+      "AuthService"
+    ],
+    "designPatterns": [
+      "继承模式：User作为基类，Author和Admin继承自User，实现角色差异化",
+      "服务层模式：通过Service类封装业务逻辑，分离数据访问和业务处理",
+      "仓储模式：Service类依赖Repository接口（未显式列出但隐含使用）",
+      "关联类模式：ArticleTag作为Article和Tag的多对多关联实体"
+    ],
+    "keyDesignDecisions": [
+      "使用密码哈希存储（passwordHash）而非明文密码，增强安全性",
+      "引入AuthService专门处理认证和授权逻辑，分离关注点",
+      "Article和Comment包含状态字段（status），支持生命周期管理",
+      "Service类采用构造器注入依赖，便于单元测试和扩展",
+      "使用泛型Page~T~支持分页查询，提高查询灵活性"
+    ],
+    "visibilityRules": {
+      "public": "对外提供的接口方法，如createArticle(), login()",
+      "private": "内部实现细节，如passwordHash, generateSummary()",
+      "protected": "子类可访问的方法，如hashPassword(), validateContent()"
+    }
+  }
+}
